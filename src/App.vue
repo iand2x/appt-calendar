@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+// Main App component
 </script>
 
 <template>
   <div id="app">
-    <HelloWorld msg="SansSerifFLF Font Test" />
+    <RouterView />
   </div>
 </template>
 
