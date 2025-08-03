@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
-import { MockAppointmentsAPI } from "@/api/appointments";
+import { MockAppointmentsAPI } from "@/api/appointmentsApi";
 import type {
   Appointment,
   AppointmentFormData,
-} from "@/features/appointments/types";
+} from "@/features/appointments/appointmentTypes";
 
 export const useAppointmentStore = defineStore("appointments", {
   state: () => ({

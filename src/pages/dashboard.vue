@@ -46,14 +46,26 @@
 
 <script setup lang="ts">
 import { onMounted, computed } from "vue";
-import { useAuthStore } from "@/stores/auth";
-import { useAppointmentStore } from "@/stores/appointments";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/authStore";
+import { useAppointmentStore } from "@/stores/appointmentsStore";
+import { useAuthGuard } from "@/composables/useAuthGuard";
 import AppointmentList from "@/components/AppointmentList.vue";
 import AppointmentForm from "@/components/AppointmentForm.vue";
 // Import from feature-specific types
-import type { AppointmentFormData } from "@/features/appointments/types";
+import type { AppointmentFormData } from "@/features/appointments/appointmentTypes";
+
+definePage({
+  meta: {
+    requiresAuth: true,
+  },
+});
 
 const authStore = useAuthStore();
+const router = useRouter();
+
+// Use the auth guard composable for component-level protection
+useAuthGuard();
 const user = authStore.user;
 
 const appointmentStore = useAppointmentStore();
@@ -68,7 +80,7 @@ const isLoading = computed(() => appointmentStore.isLoading);
 const error = computed(() => appointmentStore.error);
 
 // Fetch appointments when component mounts
-onMounted(() => {
+onMounted(async () => {
   if (user?.email) {
     appointmentStore.fetchAppointments(user.email);
   }
@@ -76,6 +88,7 @@ onMounted(() => {
 
 async function logout() {
   authStore.logout();
+  router.push("/");
 }
 
 async function addAppointment(data: AppointmentFormData) {

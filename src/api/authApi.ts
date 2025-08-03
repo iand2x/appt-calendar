@@ -1,6 +1,6 @@
 // Mock API service to simulate backend authentication
 import type { User, ApiResponse } from "@/types";
-import type { LoginCredentials } from "@/features/auth/types";
+import type { LoginCredentials } from "@/features/auth/authTypes";
 
 // Mock user database
 const mockUsers: User[] = [

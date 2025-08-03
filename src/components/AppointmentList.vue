@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Appointment } from "@/features/appointments/types";
+import type { Appointment } from "@/features/appointments/appointmentTypes";
 
 defineProps<{
   appointments: Appointment[];

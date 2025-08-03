@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
-import { MockAuthAPI } from "@/api/auth";
+import { MockAuthAPI } from "@/api/authApi";
+import { SecurityUtils } from "@/utils/security";
 import type { User } from "@/types";
-import type { LoginCredentials } from "@/features/auth/types";
+import type { LoginCredentials } from "@/features/auth/authTypes";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -52,19 +53,64 @@ export const useAuthStore = defineStore("auth", {
       const storedUser = localStorage.getItem("user");
 
       if (token && storedUser) {
+        // Run security validation first
+        if (!SecurityUtils.validateStoredAuth()) {
+          SecurityUtils.logSecurityEvent("Invalid stored auth detected", {
+            hasToken: !!token,
+            hasUser: !!storedUser,
+          });
+          this.clearAuth();
+          return;
+        }
+
         try {
+          // Basic token format validation for mock tokens
+          if (
+            !token.startsWith("mock_token_") ||
+            token.split("_").length !== 4
+          ) {
+            SecurityUtils.logSecurityEvent("Invalid token format", {
+              tokenPrefix: token.substring(0, 10),
+            });
+            this.clearAuth();
+            return;
+          }
+
           // Verify token is still valid
           const response = await MockAuthAPI.getProfile(token);
 
           if (response.success) {
-            this.user = response.data;
-            this.token = token;
-            this.isAuthenticated = true;
+            // Verify the stored user data matches the API response
+            const parsedUser = JSON.parse(storedUser);
+            if (
+              parsedUser.id === response.data.id &&
+              parsedUser.email === response.data.email
+            ) {
+              this.user = response.data;
+              this.token = token;
+              this.isAuthenticated = true;
+              SecurityUtils.logSecurityEvent("Auth restored successfully", {
+                userId: response.data.id,
+              });
+            } else {
+              // Stored user doesn't match API response, clear auth
+              SecurityUtils.logSecurityEvent("User data mismatch detected", {
+                storedId: parsedUser.id,
+                apiId: response.data.id,
+              });
+              this.clearAuth();
+            }
           } else {
             // Token invalid, clear storage
+            SecurityUtils.logSecurityEvent("Token validation failed", {
+              message: response.message,
+            });
             this.clearAuth();
           }
-        } catch {
+        } catch (error) {
+          SecurityUtils.logSecurityEvent("Auth restoration error", {
+            error: String(error),
+          });
           this.clearAuth();
         }
       }
