@@ -12,8 +12,18 @@ export default defineConfig([
   { files: ["**/*.vue"], languageOptions: { parserOptions: { parser: tseslint.parser } } },
   {
     files: ["**/*.vue"],
+    languageOptions: {
+      globals: {
+        definePage: "readonly"
+      }
+    },
     rules: {
       "vue/multi-word-component-names": "off"
-    }
+    },
+    settings: {
+      "import/core-modules": ["vue-router/auto-routes"]
+    },
+    
   },
+  
 ]);
