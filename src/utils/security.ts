@@ -53,7 +53,7 @@ export class SecurityUtils {
    * Log security events for monitoring
    */
   static logSecurityEvent(event: string, details?: Record<string, unknown>) {
-    console.log(`🔒 Security Event: ${event}`, details);
+    console.log(`Security Event: ${event}`, details);
 
     // In a real app, send this to your security monitoring service
     // analytics.track('security_event', { event, details, timestamp: new Date() });

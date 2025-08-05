@@ -2,7 +2,7 @@
 import type {
   Appointment,
   AppointmentFormData,
-} from "@/features/appointments/types";
+} from "@/features/appointments/appointmentTypes";
 import type { ApiResponse } from "@/types";
 
 // Mock appointments database - organized by user email
