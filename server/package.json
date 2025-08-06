@@ -1,0 +1,33 @@
+{
+  "name": "appt-calendar-backend",
+  "version": "1.0.0",
+  "description": "GraphQL backend for appointment calendar",
+  "main": "lambda.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "serverless offline",
+    "dev-local": "node local-dev.mjs",
+    "deploy": "serverless deploy",
+    "remove": "serverless remove",
+    "logs": "serverless logs -f graphql -t",
+    "seed": "node seed-data.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@apollo/server": "^5.0.0",
+    "@as-integrations/aws-lambda": "^3.1.0",
+    "@as-integrations/express5": "^1.1.2",
+    "@aws-sdk/client-dynamodb": "^3.859.0",
+    "@aws-sdk/lib-dynamodb": "^3.859.0",
+    "express": "^5.1.0",
+    "graphql": "^16.11.0"
+  },
+  "devDependencies": {
+    "serverless": "^4.17.2",
+    "serverless-offline": "^14.4.0"
+  }
+}
