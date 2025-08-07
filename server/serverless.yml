@@ -34,7 +34,10 @@ functions:
     events:
       - httpApi:
           path: /graphql
-          method: any
+          method: POST
+      - httpApi:
+          path: /graphql
+          method: GET
 
 resources:
   Resources:

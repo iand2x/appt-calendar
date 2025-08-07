@@ -104,6 +104,7 @@ export class GraphQLAppointmentService implements IAppointmentService {
           // Add authentication headers if needed
           // 'Authorization': `Bearer ${token}`,
         },
+        mode: "cors",
         body: JSON.stringify({
           query,
           variables,
