@@ -41,7 +41,6 @@ const typeDefs = `#graphql
     appointmentTime: String!
     serviceType: String!
     technician: String!
-    status: String!
     notes: String
     createdBy: String!
     createdAt: String!
@@ -65,7 +64,6 @@ const typeDefs = `#graphql
     appointmentTime: String
     serviceType: String
     technician: String
-    status: String
     notes: String
   }
 
@@ -135,7 +133,6 @@ const resolvers = {
         const appointment = {
           id: `appt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           ...input,
-          status: "scheduled",
           createdBy: "system", // You can get this from context/auth
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),

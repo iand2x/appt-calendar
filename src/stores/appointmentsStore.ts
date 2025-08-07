@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { MockAppointmentsAPI } from "@/api/appointmentsApi";
+import { AppointmentServiceFactory } from "@/services/AppointmentServiceFactory";
 import type {
   Appointment,
   AppointmentFormData,
@@ -31,9 +31,8 @@ export const useAppointmentStore = defineStore("appointments", {
       this.error = "";
 
       try {
-        const response = await MockAppointmentsAPI.getAppointmentsByUser(
-          userEmail
-        );
+        const appointmentService = AppointmentServiceFactory.getInstance();
+        const response = await appointmentService.getAppointmentsByUser(userEmail);
 
         if (response.success) {
           this.appointments = response.data;
@@ -55,7 +54,8 @@ export const useAppointmentStore = defineStore("appointments", {
       this.error = "";
 
       try {
-        const response = await MockAppointmentsAPI.createAppointment(
+        const appointmentService = AppointmentServiceFactory.getInstance();
+        const response = await appointmentService.createAppointment(
           appointmentData,
           userEmail
         );
@@ -84,7 +84,8 @@ export const useAppointmentStore = defineStore("appointments", {
       this.error = "";
 
       try {
-        const response = await MockAppointmentsAPI.updateAppointment(
+        const appointmentService = AppointmentServiceFactory.getInstance();
+        const response = await appointmentService.updateAppointment(
           id,
           updates,
           userEmail
@@ -113,10 +114,8 @@ export const useAppointmentStore = defineStore("appointments", {
       this.error = "";
 
       try {
-        const response = await MockAppointmentsAPI.deleteAppointment(
-          id,
-          userEmail
-        );
+        const appointmentService = AppointmentServiceFactory.getInstance();
+        const response = await appointmentService.deleteAppointment(id, userEmail);
 
         if (response.success) {
           this.appointments = this.appointments.filter((a) => a.id !== id);
