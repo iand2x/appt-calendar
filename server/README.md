@@ -32,14 +32,38 @@ A serverless GraphQL API built with Apollo Server, AWS Lambda, and DynamoDB.
 
 ## 🏃‍♂️ Running Locally
 
-1. **Start the local development server:**
+### Using Serverless Offline
+
+1. **Start the Serverless Offline emulator:**
 
    ```powershell
    npm run dev
    ```
 
-2. **GraphQL Playground** will be available at:
-   - Local: `http://localhost:3001/graphql`
+   This will start your API locally, simulating AWS Lambda and DynamoDB. Make sure you have a local DynamoDB instance running (see below).
+
+2. **Local DynamoDB setup (optional, for full offline experience):**
+
+   - Download DynamoDB Local from AWS: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html
+   - Start DynamoDB Local:
+     ```powershell
+     java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb
+     ```
+
+3. **GraphQL Playground** will be available at:
+
+   - Local: `http://localhost:3000/graphql` (or the port specified in your serverless config)
+
+4. **Seed sample data for local DynamoDB:**
+
+   ```powershell
+   npm run seed:offline
+   ```
+
+5. **View logs for offline server:**
+   ```powershell
+   npm run logs:offline
+   ```
 
 ## 🚀 Deployment
 
@@ -83,7 +107,6 @@ query {
     patientName
     appointmentDate
     appointmentTime
-    status
   }
 
   # Get specific appointment
@@ -121,17 +144,12 @@ mutation {
     }
   ) {
     id
-    status
     createdAt
   }
 
   # Update appointment
-  updateAppointment(
-    id: "appt_001"
-    input: { status: "completed", notes: "Session completed successfully" }
-  ) {
+  updateAppointment(id: "appt_001") {
     id
-    status
     updatedAt
   }
 

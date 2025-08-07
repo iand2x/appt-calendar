@@ -3,6 +3,7 @@ import { AppointmentServiceFactory } from "@/services/AppointmentServiceFactory"
 import type {
   Appointment,
   AppointmentFormData,
+  AppointmentUpdateData,
 } from "@/features/appointments/appointmentTypes";
 
 export const useAppointmentStore = defineStore("appointments", {
@@ -15,7 +16,11 @@ export const useAppointmentStore = defineStore("appointments", {
   getters: {
     getAppointmentsForUser: (state) => {
       return (userEmail: string) =>
-        state.appointments.filter((a) => a.createdBy === userEmail);
+        state.appointments
+          .filter((a) => a.createdBy === userEmail)
+          .sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
     },
 
     appointmentsByDate: (state) => {
@@ -32,12 +37,34 @@ export const useAppointmentStore = defineStore("appointments", {
 
       try {
         const appointmentService = AppointmentServiceFactory.getInstance();
-        const response = await appointmentService.getAppointmentsByUser(userEmail);
+        const response = await appointmentService.getAppointmentsByUser(
+          userEmail
+        );
 
         if (response.success) {
           this.appointments = response.data;
         } else {
           this.error = response.message || "Failed to fetch appointments";
+        }
+      } catch {
+        this.error = "Network error occurred";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async fetchAllAppointments() {
+      this.isLoading = true;
+      this.error = "";
+
+      try {
+        const appointmentService = AppointmentServiceFactory.getInstance();
+        const response = await appointmentService.getAllAppointments();
+
+        if (response.success) {
+          this.appointments = response.data;
+        } else {
+          this.error = response.message || "Failed to fetch all appointments";
         }
       } catch {
         this.error = "Network error occurred";
@@ -62,6 +89,10 @@ export const useAppointmentStore = defineStore("appointments", {
 
         if (response.success) {
           this.appointments.push(response.data);
+          // Sort the array to maintain date order
+          this.appointments.sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
           return { success: true, message: response.message };
         } else {
           this.error = response.message || "Failed to create appointment";
@@ -77,8 +108,9 @@ export const useAppointmentStore = defineStore("appointments", {
 
     async updateAppointment(
       id: string,
-      updates: Partial<AppointmentFormData>,
-      userEmail: string
+      updates: AppointmentUpdateData,
+      userEmail: string,
+      userRole?: string
     ) {
       this.isLoading = true;
       this.error = "";
@@ -88,13 +120,18 @@ export const useAppointmentStore = defineStore("appointments", {
         const response = await appointmentService.updateAppointment(
           id,
           updates,
-          userEmail
+          userEmail,
+          userRole
         );
 
         if (response.success) {
           const index = this.appointments.findIndex((a) => a.id === id);
           if (index !== -1) {
             this.appointments[index] = response.data;
+            // Re-sort the array after update to maintain date order
+            this.appointments.sort(
+              (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+            );
           }
           return { success: true, message: response.message };
         } else {
@@ -109,13 +146,17 @@ export const useAppointmentStore = defineStore("appointments", {
       }
     },
 
-    async deleteAppointment(id: string, userEmail: string) {
+    async deleteAppointment(id: string, userEmail: string, userRole?: string) {
       this.isLoading = true;
       this.error = "";
 
       try {
         const appointmentService = AppointmentServiceFactory.getInstance();
-        const response = await appointmentService.deleteAppointment(id, userEmail);
+        const response = await appointmentService.deleteAppointment(
+          id,
+          userEmail,
+          userRole
+        );
 
         if (response.success) {
           this.appointments = this.appointments.filter((a) => a.id !== id);

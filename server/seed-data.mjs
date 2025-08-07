@@ -22,6 +22,7 @@ const sampleUsers = [
     username: "admin",
     email: "admin@apptcalendar.com",
     role: "admin",
+    password: "$2b$12$spRgWv24CGzklA1rfZ6WVOV1qgnU4T5Qsn22V2QfLT.YJevdd9loC", // admin123
     createdAt: new Date().toISOString(),
   },
   {
@@ -29,6 +30,7 @@ const sampleUsers = [
     username: "technician1",
     email: "tech1@apptcalendar.com",
     role: "technician",
+    password: "$2b$12$Vi3MJKTgMsvfBOV4wrZXCOd9XwcNB7vESbVP4BFAckeDIC4qXOSMa", // tech123
     createdAt: new Date().toISOString(),
   },
 ];
@@ -37,40 +39,56 @@ const sampleUsers = [
 const sampleAppointments = [
   {
     id: "appt_001",
-    patientName: "John Doe",
-    patientEmail: "john.doe@email.com",
-    appointmentDate: "2024-01-15",
-    appointmentTime: "10:00",
-    serviceType: "Consultation",
-    technician: "Dr. Smith",
+    date: "2024-01-15",
+    time: "10:00",
+    dentist: "Dr. Smith",
+    equipment: "Hygiene Equipment",
     notes: "Initial consultation for new patient",
-    createdBy: "user_001",
+    createdBy: "admin@apptcalendar.com",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: "appt_002",
-    patientName: "Jane Smith",
-    patientEmail: "jane.smith@email.com",
-    appointmentDate: "2024-01-15",
-    appointmentTime: "14:30",
-    serviceType: "Follow-up",
-    technician: "Dr. Johnson",
+    date: "2024-01-15",
+    time: "14:30",
+    dentist: "Dr. Johnson",
+    equipment: "Scanner",
     notes: "Follow-up appointment",
-    createdBy: "user_001",
+    createdBy: "admin@apptcalendar.com",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: "appt_003",
-    patientName: "Bob Wilson",
-    patientEmail: "bob.wilson@email.com",
-    appointmentDate: "2024-01-16",
-    appointmentTime: "09:00",
-    serviceType: "Therapy Session",
-    technician: "Dr. Brown",
-    notes: "Physical therapy session completed successfully",
-    createdBy: "user_002",
+    date: "2024-01-16",
+    time: "09:00",
+    dentist: "Dr. Brown",
+    equipment: "Compressor",
+    notes: "Cleaning session completed successfully",
+    createdBy: "tech1@apptcalendar.com",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "appt_004",
+    date: "2024-01-17",
+    time: "11:30",
+    dentist: "Dr. Smith",
+    equipment: "Suction Machine",
+    notes: "Root canal procedure",
+    createdBy: "tech1@apptcalendar.com",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "appt_005",
+    date: "2024-01-18",
+    time: "15:00",
+    dentist: "Dr. Johnson",
+    equipment: "Scanner",
+    notes: "Regular checkup",
+    createdBy: "admin@apptcalendar.com",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -101,7 +119,7 @@ async function seedData() {
       });
       await dynamoDB.send(command);
       console.log(
-        `✅ Added appointment: ${appointment.patientName} - ${appointment.appointmentDate}`
+        `✅ Added appointment: ${appointment.dentist} - ${appointment.date} ${appointment.time}`
       );
     }
 

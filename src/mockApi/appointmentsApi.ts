@@ -2,6 +2,7 @@
 import type {
   Appointment,
   AppointmentFormData,
+  AppointmentUpdateData,
 } from "@/features/appointments/appointmentTypes";
 import type { ApiResponse } from "@/types";
 
@@ -151,62 +152,132 @@ export class MockAppointmentsAPI {
   // Update appointment
   static async updateAppointment(
     id: string,
-    updates: Partial<AppointmentFormData>,
-    userEmail: string
+    updates: AppointmentUpdateData,
+    userEmail: string,
+    userRole?: string
   ): Promise<ApiResponse<Appointment>> {
     await delay(400);
 
-    const userAppointments = mockAppointments[userEmail] || [];
-    const appointmentIndex = userAppointments.findIndex((apt) => apt.id === id);
+    // Check if user is admin
+    const isAdmin = userRole === "admin";
 
-    if (appointmentIndex === -1) {
+    if (isAdmin) {
+      // Admin can update any appointment from any user
+      for (const email in mockAppointments) {
+        const appointments = mockAppointments[email];
+        const appointmentIndex = appointments.findIndex((apt) => apt.id === id);
+
+        if (appointmentIndex !== -1) {
+          // Update the appointment
+          const updatedAppointment = {
+            ...appointments[appointmentIndex],
+            ...updates,
+          };
+          mockAppointments[email][appointmentIndex] = updatedAppointment;
+
+          return {
+            success: true,
+            message: "Appointment updated successfully",
+            data: updatedAppointment,
+          };
+        }
+      }
+
+      // Appointment not found anywhere
       return {
         success: false,
         message: "Appointment not found",
         data: {} as Appointment,
       };
+    } else {
+      // Regular users can only update their own appointments
+      const userAppointments = mockAppointments[userEmail] || [];
+      const appointmentIndex = userAppointments.findIndex(
+        (apt) => apt.id === id
+      );
+
+      if (appointmentIndex === -1) {
+        return {
+          success: false,
+          message: "Appointment not found",
+          data: {} as Appointment,
+        };
+      }
+
+      // Update the appointment
+      const updatedAppointment = {
+        ...userAppointments[appointmentIndex],
+        ...updates,
+      };
+      mockAppointments[userEmail][appointmentIndex] = updatedAppointment;
+
+      return {
+        success: true,
+        message: "Appointment updated successfully",
+        data: updatedAppointment,
+      };
     }
-
-    // Update the appointment
-    const updatedAppointment = {
-      ...userAppointments[appointmentIndex],
-      ...updates,
-    };
-    mockAppointments[userEmail][appointmentIndex] = updatedAppointment;
-
-    return {
-      success: true,
-      message: "Appointment updated successfully",
-      data: updatedAppointment,
-    };
   }
 
   // Delete appointment
   static async deleteAppointment(
     id: string,
-    userEmail: string
+    userEmail: string,
+    userRole?: string
   ): Promise<ApiResponse<{ id: string }>> {
     await delay(300);
 
-    const userAppointments = mockAppointments[userEmail] || [];
-    const appointmentIndex = userAppointments.findIndex((apt) => apt.id === id);
+    // Check if user is admin
+    const isAdmin = userRole === "admin";
 
-    if (appointmentIndex === -1) {
+    if (isAdmin) {
+      // Admin can delete any appointment from any user
+      for (const email in mockAppointments) {
+        const appointments = mockAppointments[email];
+        const appointmentIndex = appointments.findIndex((apt) => apt.id === id);
+
+        if (appointmentIndex !== -1) {
+          // Remove the appointment
+          mockAppointments[email].splice(appointmentIndex, 1);
+
+          return {
+            success: true,
+            message: "Appointment deleted successfully",
+            data: { id },
+          };
+        }
+      }
+
+      // Appointment not found anywhere
       return {
         success: false,
         message: "Appointment not found",
         data: {} as { id: string },
       };
+    } else {
+      // Regular users can only delete their own appointments
+      const userAppointments = mockAppointments[userEmail] || [];
+      const appointmentIndex = userAppointments.findIndex(
+        (apt) => apt.id === id
+      );
+
+      if (appointmentIndex === -1) {
+        return {
+          success: false,
+          message: "Appointment not found",
+          data: {} as { id: string },
+        };
+      }
+
+      // Remove the appointment
+      mockAppointments[userEmail].splice(appointmentIndex, 1);
+
+      return {
+        success: true,
+        message: "Appointment deleted successfully",
+        data: { id },
+      };
     }
-
-    // Remove the appointment
-    mockAppointments[userEmail].splice(appointmentIndex, 1);
-
-    return {
-      success: true,
-      message: "Appointment deleted successfully",
-      data: { id },
-    };
   }
 
   // Get appointments by date range

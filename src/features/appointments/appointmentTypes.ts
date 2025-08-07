@@ -8,8 +8,10 @@ export interface Appointment {
   createdBy: string;
 }
 
-export type AppointmentFormData = Omit<Appointment, "id">;
-export type AppointmentUpdateData = Partial<Omit<Appointment, "id">>;
+export type AppointmentFormData = Omit<Appointment, "id" | "createdBy">;
+export type AppointmentUpdateData = Partial<
+  Omit<Appointment, "id" | "createdBy">
+>;
 
 // Component-specific types (keep local when only used in one component)
 export interface AppointmentListProps {

@@ -1,6 +1,24 @@
 // Mock API service to simulate backend authentication
 import type { User, ApiResponse } from "@/types";
 import type { LoginCredentials } from "@/features/auth/authTypes";
+import { PasswordUtil } from "@/utils/PasswordUtil";
+
+// Function to generate new hashed passwords (for development/testing)
+// Usage: Call this function when you need to add new users or change passwords
+// Example: (paste directly in browser console)
+// import("./src/mockApi/authApi.ts").then((module) => {
+//   module.generateHashedPasswords();
+// });
+async function generateHashedPasswords() {
+  const passwords = {
+    "tech@example.com": "password123",
+    "admin@clinic.com": "admin789",
+    "admin@apptcalendar.com": "admin123",
+    "tech1@apptcalendar.com": "tech123",
+  };
+
+  await PasswordUtil.logHashedPasswords(passwords);
+}
 
 // Mock user database
 const mockUsers: User[] = [
@@ -9,27 +27,16 @@ const mockUsers: User[] = [
     username: "john_tech",
     email: "tech@example.com",
     role: "technician",
+    password: "$2b$12$Nww9ND23o0JQP/sQvMeUG.oigENGCpUAYp3bxA3ey0uvHlxNUejNe",
   },
   {
     id: "2",
-    username: "dr_smith",
-    email: "dr.smith@clinic.com",
-    role: "dentist",
-  },
-  {
-    id: "3",
     username: "admin_user",
     email: "admin@clinic.com",
     role: "admin",
+    password: "$2b$12$AFDKda8W8kulqEgcAVIinu.Mvr3/NqHHEWzpKzhEbxWDvcf/a8UQK",
   },
 ];
-
-// Mock password storage (in real app, this would be hashed in backend)
-const mockPasswords: Record<string, string> = {
-  "tech@example.com": "password123",
-  "dr.smith@clinic.com": "dentist456",
-  "admin@clinic.com": "admin789",
-};
 
 // Simulate API delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -55,8 +62,21 @@ export class MockAuthAPI {
       };
     }
 
-    // Check password
-    if (mockPasswords[email] !== password) {
+    // Check password against hashed version
+    const hashedPassword = user.password;
+    if (!hashedPassword) {
+      return {
+        success: false,
+        message: "User configuration error",
+        data: {} as { user: User; token: string },
+      };
+    }
+
+    const isPasswordValid = await PasswordUtil.verifyPassword(
+      password,
+      hashedPassword
+    );
+    if (!isPasswordValid) {
       return {
         success: false,
         message: "Invalid password",
@@ -100,7 +120,7 @@ export class MockAuthAPI {
     };
   }
 
-  // Get all users (for admin)
+  // Get all users
   static async getUsers(): Promise<ApiResponse<User[]>> {
     await delay(500);
 
@@ -110,4 +130,20 @@ export class MockAuthAPI {
       data: mockUsers,
     };
   }
+
+  // Utility method to generate hashed passwords (for development)
+  static async generateHashedPassword(plainPassword: string): Promise<string> {
+    return await PasswordUtil.hashPassword(plainPassword);
+  }
+
+  // Utility method to verify passwords (for testing)
+  static async verifyPassword(
+    plainPassword: string,
+    hashedPassword: string
+  ): Promise<boolean> {
+    return await PasswordUtil.verifyPassword(plainPassword, hashedPassword);
+  }
 }
+
+// Export utility for external use
+export { generateHashedPasswords };

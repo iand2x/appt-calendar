@@ -51,7 +51,12 @@
       <!-- Test Accounts Helper -->
       <div class="mt-6 p-4 bg-gray-100 rounded-lg">
         <h3 class="text-sm font-medium text-gray-700 mb-2">Test Accounts:</h3>
-        <div class="space-y-2">
+
+        <div v-if="loadingUsers" class="text-center py-4">
+          <div class="text-sm text-gray-500">Loading test accounts...</div>
+        </div>
+
+        <div v-else-if="testAccounts.length > 0" class="space-y-2">
           <div
             v-for="account in testAccounts"
             :key="account.email"
@@ -60,11 +65,18 @@
           >
             <div>
               <div class="font-medium">{{ account.role }}</div>
-              <div class="text-gray-500">{{ account.email }}</div>
+              <div class="text-gray-500">
+                {{ account.username || account.email }}
+              </div>
             </div>
             <div class="text-gray-400">{{ account.password }}</div>
           </div>
         </div>
+
+        <div v-else class="text-center py-4">
+          <div class="text-sm text-gray-500">No test accounts available</div>
+        </div>
+
         <p class="text-xs text-gray-500 mt-2">Click any account to auto-fill</p>
       </div>
     </div>
@@ -72,23 +84,71 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
+import { AuthServiceFactory } from "@/services/AuthServiceFactory";
+// import { AppointmentServiceFactory } from "@/services/AppointmentServiceFactory";
 
 const email = ref("");
 const password = ref("");
 const error = ref("");
 const isLoading = ref(false);
+const loadingUsers = ref(false);
+const testAccounts = ref([]);
 const router = useRouter();
 const auth = useAuthStore();
 
-// Display available test accounts
-const testAccounts = [
-  { email: "tech@example.com", password: "password123", role: "Technician" },
-  { email: "dr.smith@clinic.com", password: "dentist456", role: "Dentist" },
-  { email: "admin@clinic.com", password: "admin789", role: "Admin" },
-];
+// Helper function to get correct password for testing
+function getPasswordForUser(email) {
+  const passwordMap = {
+    "tech@example.com": "password123",
+    "admin@clinic.com": "admin789",
+    "admin@apptcalendar.com": "admin123",
+    "tech1@apptcalendar.com": "tech123",
+  };
+
+  return passwordMap[email] || "password123"; // Default fallback
+}
+
+// Fetch users from API for testing
+async function fetchTestUsers() {
+  loadingUsers.value = true;
+  try {
+    const authService = AuthServiceFactory.getInstance();
+    const response = await authService.getUsers();
+
+    if (response.success) {
+      testAccounts.value = response.data.map((user) => ({
+        email: user.email,
+        password: getPasswordForUser(user.email),
+        role: user.role === "admin" ? "Admin" : "Technician",
+        username: user.username,
+      }));
+    }
+  } catch (error) {
+    console.error("Failed to fetch test users:", error);
+    // Fallback to hardcoded accounts if API fails
+    testAccounts.value = [
+      {
+        email: "tech@example.com",
+        password: "password123",
+        role: "Technician",
+      },
+      {
+        email: "admin@clinic.com",
+        password: "admin789",
+        role: "Admin",
+      },
+    ];
+  } finally {
+    loadingUsers.value = false;
+  }
+}
+
+onMounted(() => {
+  fetchTestUsers();
+});
 
 async function handleLogin() {
   if (!email.value || !password.value) {

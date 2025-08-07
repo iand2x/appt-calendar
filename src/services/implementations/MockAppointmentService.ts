@@ -1,8 +1,9 @@
 import type { IAppointmentService } from "@/services/interfaces/IAppointmentService";
-import { MockAppointmentsAPI } from "@/api/appointmentsApi";
+import { MockAppointmentsAPI } from "@/mockApi/appointmentsApi";
 import type {
   Appointment,
   AppointmentFormData,
+  AppointmentUpdateData,
 } from "@/features/appointments/appointmentTypes";
 import type { ApiResponse } from "@/types";
 
@@ -26,17 +27,24 @@ export class MockAppointmentService implements IAppointmentService {
 
   async updateAppointment(
     id: string,
-    updates: Partial<AppointmentFormData>,
-    userEmail: string
+    updates: AppointmentUpdateData,
+    userEmail: string,
+    userRole?: string
   ): Promise<ApiResponse<Appointment>> {
-    return MockAppointmentsAPI.updateAppointment(id, updates, userEmail);
+    return MockAppointmentsAPI.updateAppointment(
+      id,
+      updates,
+      userEmail,
+      userRole
+    );
   }
 
   async deleteAppointment(
     id: string,
-    userEmail: string
+    userEmail: string,
+    userRole?: string
   ): Promise<ApiResponse<{ id: string }>> {
-    return MockAppointmentsAPI.deleteAppointment(id, userEmail);
+    return MockAppointmentsAPI.deleteAppointment(id, userEmail, userRole);
   }
 
   async getAppointmentsByDateRange(

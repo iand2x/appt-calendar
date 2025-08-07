@@ -1,9 +1,17 @@
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
     <header class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-blue-900">
-        Welcome, {{ user?.username }}
-      </h1>
+      <div>
+        <h1 class="text-2xl font-bold text-blue-900">
+          Welcome, {{ user?.username }}
+        </h1>
+        <p
+          v-if="user?.role === 'admin'"
+          class="text-sm text-green-600 font-medium"
+        >
+          👑 Administrator View - Viewing all appointments
+        </p>
+      </div>
       <button @click="logout" class="text-sm text-red-600 underline">
         Logout
       </button>
@@ -16,7 +24,11 @@
       <AppointmentForm @submit="addAppointment" />
     </section>
     <section>
-      <h2 class="text-lg font-semibold mb-2">Upcoming Appointments</h2>
+      <h2 class="text-lg font-semibold mb-2">
+        {{
+          user?.role === "admin" ? "All Appointments" : "Upcoming Appointments"
+        }}
+      </h2>
 
       <!-- Loading state -->
       <div v-if="isLoading" class="flex justify-center py-8">
@@ -32,7 +44,11 @@
       >
         <p class="text-red-600">{{ error }}</p>
         <button
-          @click="appointmentStore.fetchAppointments(user?.email ?? '')"
+          @click="
+            user?.role === 'admin'
+              ? appointmentStore.fetchAllAppointments()
+              : appointmentStore.fetchAppointments(user?.email ?? '')
+          "
           class="mt-2 text-sm text-red-700 underline hover:no-underline"
         >
           Try again
@@ -87,6 +103,7 @@ import AppointmentDetail from "@/components/AppointmentDetail.vue";
 // Import from feature-specific types
 import type {
   AppointmentFormData,
+  AppointmentUpdateData,
   Appointment,
 } from "@/features/appointments/appointmentTypes";
 
@@ -117,19 +134,12 @@ const deletingAppointmentId = ref<string | null>(null);
 const showDetailModal = ref(false);
 const viewingAppointment = ref<Appointment | null>(null);
 
-// Computed property to get filtered and sorted appointments for current user
-const appointments = computed(() => {
-  const userAppointments = appointmentStore.getAppointmentsForUser(
-    user?.email ?? ""
-  );
-
-  // Sort appointments chronologically (earliest first)
-  return userAppointments.sort((a, b) => {
-    const dateA = new Date(a.date).getTime();
-    const dateB = new Date(b.date).getTime();
-    return dateA - dateB;
-  });
-});
+// View appointment based on user role
+const appointments = computed(() =>
+  user?.role === "admin"
+    ? appointmentStore.appointmentsByDate
+    : appointmentStore.getAppointmentsForUser(user?.email ?? "")
+);
 
 // Loading and error states
 const isLoading = computed(() => appointmentStore.isLoading);
@@ -138,7 +148,11 @@ const error = computed(() => appointmentStore.error);
 // Fetch appointments when component mounts
 onMounted(async () => {
   if (user?.email) {
-    appointmentStore.fetchAppointments(user.email);
+    if (user.role === "admin") {
+      appointmentStore.fetchAllAppointments();
+    } else {
+      appointmentStore.fetchAppointments(user.email);
+    }
   }
 });
 
@@ -153,16 +167,13 @@ async function addAppointment(data: AppointmentFormData) {
   const result = await appointmentStore.addAppointment(
     {
       ...data,
-      createdBy: user.email,
     },
     user.email
   );
 
   if (result.success) {
-    // Optionally show success message
     console.log("Appointment created successfully!");
   } else {
-    // Handle error
     console.error("Failed to create appointment:", result.message);
   }
 }
@@ -199,16 +210,18 @@ function closeEditModal() {
   editingAppointment.value = null;
 }
 
-async function handleEditSubmit(data: AppointmentFormData & { id?: string }) {
+async function handleEditSubmit(data: AppointmentUpdateData & { id?: string }) {
   if (!user?.email || !data.id) return;
+  console.log("Submitting edit for appointment:", data);
+
+  // Extract id and pass only the update fields
+  const { id, ...updateData } = data;
 
   const result = await appointmentStore.updateAppointment(
-    data.id,
-    {
-      ...data,
-      createdBy: user.email,
-    },
-    user.email
+    id,
+    updateData,
+    user.email,
+    user.role
   );
 
   if (result.success) {
@@ -234,7 +247,8 @@ async function confirmDelete() {
 
   const result = await appointmentStore.deleteAppointment(
     deletingAppointmentId.value,
-    user.email
+    user.email,
+    user.role
   );
 
   if (result.success) {

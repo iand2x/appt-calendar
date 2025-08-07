@@ -10,7 +10,7 @@
         No appointments scheduled
       </h3>
       <p class="text-gray-500">
-        Create your first appointment using the form below.
+        Create your first appointment using the form above.
       </p>
     </div>
 

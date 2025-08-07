@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { MockAuthAPI } from "@/api/authApi";
+import { AuthServiceFactory } from "@/services/AuthServiceFactory";
 import { SecurityUtils } from "@/utils/security";
 import type { User } from "@/types";
 import type { LoginCredentials } from "@/features/auth/authTypes";
@@ -24,7 +24,8 @@ export const useAuthStore = defineStore("auth", {
       this.error = "";
 
       try {
-        const response = await MockAuthAPI.login(credentials);
+        const authService = AuthServiceFactory.getInstance();
+        const response = await authService.login(credentials);
 
         if (response.success) {
           this.user = response.data.user;
@@ -77,7 +78,8 @@ export const useAuthStore = defineStore("auth", {
           }
 
           // Verify token is still valid
-          const response = await MockAuthAPI.getProfile(token);
+          const authService = AuthServiceFactory.getInstance();
+          const response = await authService.getProfile(token);
 
           if (response.success) {
             // Verify the stored user data matches the API response

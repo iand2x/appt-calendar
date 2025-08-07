@@ -27,7 +27,7 @@
 import AppointmentForm from "@/components/AppointmentForm.vue";
 import type {
   Appointment,
-  AppointmentFormData,
+  AppointmentUpdateData,
 } from "@/features/appointments/appointmentTypes";
 
 interface Props {
@@ -39,6 +39,6 @@ defineProps<Props>();
 
 defineEmits<{
   close: [];
-  submit: [data: AppointmentFormData & { id?: string }];
+  submit: [data: AppointmentUpdateData & { id?: string }];
 }>();
 </script>

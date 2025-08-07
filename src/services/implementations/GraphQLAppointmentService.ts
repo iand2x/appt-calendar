@@ -2,6 +2,7 @@ import type { IAppointmentService } from "@/services/interfaces/IAppointmentServ
 import type {
   Appointment,
   AppointmentFormData,
+  AppointmentUpdateData,
 } from "@/features/appointments/appointmentTypes";
 import type { ApiResponse } from "@/types";
 
@@ -62,8 +63,8 @@ const GRAPHQL_MUTATIONS = {
   `,
 
   UPDATE_APPOINTMENT: `
-    mutation UpdateAppointment($id: ID!, $input: UpdateAppointmentInput!, $userEmail: String!) {
-      updateAppointment(id: $id, input: $input, userEmail: $userEmail) {
+    mutation UpdateAppointment($id: ID!, $input: UpdateAppointmentInput!, $userEmail: String!, $userRole: String) {
+      updateAppointment(id: $id, input: $input, userEmail: $userEmail, userRole: $userRole) {
         id
         date
         dentist
@@ -75,8 +76,8 @@ const GRAPHQL_MUTATIONS = {
   `,
 
   DELETE_APPOINTMENT: `
-    mutation DeleteAppointment($id: ID!, $userEmail: String!) {
-      deleteAppointment(id: $id, userEmail: $userEmail)
+    mutation DeleteAppointment($id: ID!, $userEmail: String!, $userRole: String) {
+      deleteAppointment(id: $id, userEmail: $userEmail, userRole: $userRole)
     }
   `,
 };
@@ -201,12 +202,18 @@ export class GraphQLAppointmentService implements IAppointmentService {
 
   async updateAppointment(
     id: string,
-    updates: Partial<AppointmentFormData>,
-    userEmail: string
+    updates: AppointmentUpdateData,
+    userEmail: string,
+    userRole?: string
   ): Promise<ApiResponse<Appointment>> {
     const result = await this.makeGraphQLRequest<{
       updateAppointment: Appointment;
-    }>(GRAPHQL_MUTATIONS.UPDATE_APPOINTMENT, { id, input: updates, userEmail });
+    }>(GRAPHQL_MUTATIONS.UPDATE_APPOINTMENT, {
+      id,
+      input: updates,
+      userEmail,
+      userRole,
+    });
 
     if (result.success) {
       return {
@@ -224,11 +231,12 @@ export class GraphQLAppointmentService implements IAppointmentService {
 
   async deleteAppointment(
     id: string,
-    userEmail: string
+    userEmail: string,
+    userRole?: string
   ): Promise<ApiResponse<{ id: string }>> {
     const result = await this.makeGraphQLRequest<boolean>(
       GRAPHQL_MUTATIONS.DELETE_APPOINTMENT,
-      { id, userEmail }
+      { id, userEmail, userRole }
     );
 
     if (result.success) {

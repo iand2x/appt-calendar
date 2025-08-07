@@ -1,6 +1,7 @@
 import type {
   Appointment,
   AppointmentFormData,
+  AppointmentUpdateData,
 } from "@/features/appointments/appointmentTypes";
 import type { ApiResponse } from "@/types";
 
@@ -20,14 +21,16 @@ export interface IAppointmentService {
   // Update appointment
   updateAppointment(
     id: string,
-    updates: Partial<AppointmentFormData>,
-    userEmail: string
+    updates: AppointmentUpdateData,
+    userEmail: string,
+    userRole?: string
   ): Promise<ApiResponse<Appointment>>;
 
   // Delete appointment
   deleteAppointment(
     id: string,
-    userEmail: string
+    userEmail: string,
+    userRole?: string
   ): Promise<ApiResponse<{ id: string }>>;
 
   // Get appointments by date range

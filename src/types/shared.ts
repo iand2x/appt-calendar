@@ -3,7 +3,8 @@ export interface User {
   id: string;
   username: string;
   email?: string;
-  role?: "admin" | "technician" | "dentist";
+  role?: "admin" | "technician";
+  password: string;
 }
 
 // Common utility types
