@@ -9,7 +9,13 @@
       </button>
     </header>
 
-    <section class="mb-6">
+    <section class="mb-6 max-w-2xl mx-auto">
+      <h2 class="text-lg font-semibold mb-2 text-center">
+        Create New Appointment
+      </h2>
+      <AppointmentForm @submit="addAppointment" />
+    </section>
+    <section>
       <h2 class="text-lg font-semibold mb-2">Upcoming Appointments</h2>
 
       <!-- Loading state -->
@@ -34,26 +40,55 @@
       </div>
 
       <!-- Appointments list -->
-      <AppointmentList v-else :appointments="appointments" />
+      <AppointmentList
+        v-else
+        :appointments="appointments"
+        @edit="handleEdit"
+        @delete="handleDelete"
+        @view="handleView"
+      />
     </section>
 
-    <section>
-      <h2 class="text-lg font-semibold mb-2">Create New Appointment</h2>
-      <AppointmentForm @submit="addAppointment" />
-    </section>
+    <!-- Modals -->
+    <AppointmentDetail
+      :show="showDetailModal"
+      :appointment="viewingAppointment || undefined"
+      @close="closeDetailModal"
+      @edit="handleEditFromDetail"
+      @delete="handleDeleteFromDetail"
+    />
+
+    <EditAppointmentModal
+      :show="showEditModal"
+      :appointment="editingAppointment || undefined"
+      @close="closeEditModal"
+      @submit="handleEditSubmit"
+    />
+
+    <DeleteConfirmationModal
+      :show="showDeleteModal"
+      @close="closeDeleteModal"
+      @confirm="confirmDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from "vue";
+import { onMounted, computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useAppointmentStore } from "@/stores/appointmentsStore";
 import { useAuthGuard } from "@/composables/useAuthGuard";
 import AppointmentList from "@/components/AppointmentList.vue";
 import AppointmentForm from "@/components/AppointmentForm.vue";
+import EditAppointmentModal from "@/components/EditAppointmentModal.vue";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal.vue";
+import AppointmentDetail from "@/components/AppointmentDetail.vue";
 // Import from feature-specific types
-import type { AppointmentFormData } from "@/features/appointments/appointmentTypes";
+import type {
+  AppointmentFormData,
+  Appointment,
+} from "@/features/appointments/appointmentTypes";
 
 definePage({
   meta: {
@@ -70,10 +105,31 @@ const user = authStore.user;
 
 const appointmentStore = useAppointmentStore();
 
-// Computed property to get filtered appointments for current user
-const appointments = computed(() =>
-  appointmentStore.getAppointmentsForUser(user?.email ?? "")
-);
+// Modal state for editing
+const showEditModal = ref(false);
+const editingAppointment = ref<Appointment | null>(null);
+
+// Modal state for delete confirmation
+const showDeleteModal = ref(false);
+const deletingAppointmentId = ref<string | null>(null);
+
+// Modal state for appointment detail view
+const showDetailModal = ref(false);
+const viewingAppointment = ref<Appointment | null>(null);
+
+// Computed property to get filtered and sorted appointments for current user
+const appointments = computed(() => {
+  const userAppointments = appointmentStore.getAppointmentsForUser(
+    user?.email ?? ""
+  );
+
+  // Sort appointments chronologically (earliest first)
+  return userAppointments.sort((a, b) => {
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    return dateA - dateB;
+  });
+});
 
 // Loading and error states
 const isLoading = computed(() => appointmentStore.isLoading);
@@ -108,6 +164,84 @@ async function addAppointment(data: AppointmentFormData) {
   } else {
     // Handle error
     console.error("Failed to create appointment:", result.message);
+  }
+}
+
+function handleEdit(appointment: Appointment) {
+  editingAppointment.value = appointment;
+  showEditModal.value = true;
+}
+
+function handleView(appointment: Appointment) {
+  viewingAppointment.value = appointment;
+  showDetailModal.value = true;
+}
+
+function closeDetailModal() {
+  showDetailModal.value = false;
+  viewingAppointment.value = null;
+}
+
+function handleEditFromDetail(appointment: Appointment) {
+  // Close detail modal and open edit modal
+  closeDetailModal();
+  handleEdit(appointment);
+}
+
+function handleDeleteFromDetail(appointmentId: string) {
+  // Close detail modal and open delete confirmation
+  closeDetailModal();
+  handleDelete(appointmentId);
+}
+
+function closeEditModal() {
+  showEditModal.value = false;
+  editingAppointment.value = null;
+}
+
+async function handleEditSubmit(data: AppointmentFormData & { id?: string }) {
+  if (!user?.email || !data.id) return;
+
+  const result = await appointmentStore.updateAppointment(
+    data.id,
+    {
+      ...data,
+      createdBy: user.email,
+    },
+    user.email
+  );
+
+  if (result.success) {
+    console.log("Appointment updated successfully!");
+    closeEditModal();
+  } else {
+    console.error("Failed to update appointment:", result.message);
+  }
+}
+
+function handleDelete(appointmentId: string) {
+  deletingAppointmentId.value = appointmentId;
+  showDeleteModal.value = true;
+}
+
+function closeDeleteModal() {
+  showDeleteModal.value = false;
+  deletingAppointmentId.value = null;
+}
+
+async function confirmDelete() {
+  if (!user?.email || !deletingAppointmentId.value) return;
+
+  const result = await appointmentStore.deleteAppointment(
+    deletingAppointmentId.value,
+    user.email
+  );
+
+  if (result.success) {
+    console.log("Appointment deleted successfully!");
+    closeDeleteModal();
+  } else {
+    console.error("Failed to delete appointment:", result.message);
   }
 }
 </script>

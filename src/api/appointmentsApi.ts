@@ -41,32 +41,6 @@ const mockAppointments: Record<string, Appointment[]> = {
       createdBy: "tech@example.com",
     },
   ],
-  "dr.smith@clinic.com": [
-    {
-      id: "5",
-      date: "2025-08-05T10:30",
-      dentist: "Dr. Smith",
-      equipment: "Scanner",
-      notes: "Pre-appointment scanner setup for crown fitting",
-      createdBy: "dr.smith@clinic.com",
-    },
-    {
-      id: "6",
-      date: "2025-08-05T16:00",
-      dentist: "Dr. Smith",
-      equipment: "Compressor",
-      notes: "Air pressure adjustment for precise drilling",
-      createdBy: "dr.smith@clinic.com",
-    },
-    {
-      id: "7",
-      date: "2025-08-06T13:30",
-      dentist: "Dr. Smith",
-      equipment: "Hygiene Equipment",
-      notes: "Equipment prep for deep cleaning procedures",
-      createdBy: "dr.smith@clinic.com",
-    },
-  ],
   "admin@clinic.com": [
     {
       id: "8",

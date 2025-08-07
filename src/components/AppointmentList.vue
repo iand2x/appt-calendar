@@ -19,55 +19,42 @@
       <div
         v-for="appt in appointments"
         :key="appt.id"
-        class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500 hover:shadow-md transition-shadow"
+        class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500 hover:shadow-md transition-shadow cursor-pointer"
+        @click="$emit('view', appt)"
       >
-        <!-- Header with date and equipment -->
+        <!-- Header with date and dentist -->
         <div class="flex justify-between items-start mb-3">
           <div class="flex-1">
             <h3 class="font-semibold text-lg text-gray-800">
               {{ formatDate(appt.date) }}
+              <span class="text-sm text-gray-500 font-normal">{{
+                formatTime(appt.date)
+              }}</span>
             </h3>
-            <p class="text-sm text-gray-500">{{ formatTime(appt.date) }}</p>
           </div>
-          <span
-            class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium"
-          >
-            {{ appt.equipment }}
-          </span>
-        </div>
-
-        <!-- Details -->
-        <div class="space-y-2">
-          <div class="flex items-center">
-            <span class="text-gray-500 text-sm font-medium w-20">Dentist:</span>
-            <span class="text-gray-800">{{ appt.dentist }}</span>
-          </div>
-
-          <div v-if="appt.notes" class="flex items-start">
-            <span class="text-gray-500 text-sm font-medium w-20 mt-0.5"
-              >Notes:</span
+          <div class="text-right">
+            <span
+              class="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full font-bold"
             >
-            <span class="text-gray-700 text-sm">{{ appt.notes }}</span>
+              {{ appt.dentist }}
+            </span>
           </div>
         </div>
 
-        <!-- Status indicator -->
-        <div class="mt-4 flex justify-between items-center">
-          <div class="flex items-center text-xs text-gray-500">
-            <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-            Scheduled
-          </div>
-
-          <!-- Action buttons -->
+        <!-- Action buttons -->
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-gray-500 italic"
+            >Click to view details</span
+          >
           <div class="flex space-x-2">
             <button
-              @click="$emit('edit', appt)"
+              @click.stop="$emit('edit', appt)"
               class="text-blue-600 hover:text-blue-800 text-sm font-medium"
             >
               Edit
             </button>
             <button
-              @click="$emit('delete', appt.id)"
+              @click.stop="$emit('delete', appt.id)"
               class="text-red-600 hover:text-red-800 text-sm font-medium"
             >
               Delete
@@ -89,6 +76,7 @@ defineProps<{
 defineEmits<{
   edit: [appointment: Appointment];
   delete: [id: string];
+  view: [appointment: Appointment];
 }>();
 
 // Helper functions for date formatting
