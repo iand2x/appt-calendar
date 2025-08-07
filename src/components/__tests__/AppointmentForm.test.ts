@@ -91,13 +91,13 @@ describe("AppointmentForm", () => {
       notes: string;
       date: string;
     };
-    console.log("Form data:", formData);
 
+    // With UTC timezone forced in test setup, this should be consistent
     expect(formData).toEqual({
       dentist: "Dr. Johnson",
       equipment: "Scanner",
       notes: "Dental scan appointment",
-      date: "2024-01-15T06:30:00.000Z", // Adjust for timezone offset
+      date: "2024-01-15T14:30:00.000Z", // Should be consistent in UTC
     });
   });
 

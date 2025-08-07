@@ -8,6 +8,9 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
+    env: {
+      TZ: "UTC", // Force UTC timezone for all tests
+    },
   },
   resolve: {
     alias: {

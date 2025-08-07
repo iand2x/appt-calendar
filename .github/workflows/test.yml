@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      TZ: UTC # Force UTC timezone for consistent test results
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

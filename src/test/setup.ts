@@ -6,6 +6,10 @@ beforeAll(() => {
   // Mock environment variables for testing
   vi.stubEnv("VITE_GRAPHQL_ENDPOINT", "http://localhost:3001/graphql");
 
+  // Set timezone to UTC for consistent test results
+  process.env.TZ = "UTC";
+  vi.setSystemTime(new Date("2024-01-15T00:00:00.000Z"));
+
   // Global test setup
   Object.defineProperty(window, "matchMedia", {
     writable: true,
