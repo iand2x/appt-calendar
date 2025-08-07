@@ -76,12 +76,14 @@ export class GraphQLAuthService implements IAuthService {
       const response = await fetch(this.graphqlEndpoint, {
         method: "POST",
         headers: {
+          "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           query,
           variables,
         }),
+        mode: "cors",
       });
 
       const result = await response.json();

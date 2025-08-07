@@ -49,10 +49,15 @@ Test with a simple query:
 ```graphql
 query {
   hello
-  getAppointments {
+  appointments {
     id
-    patientName
-    appointmentDate
+    date
+    dentist
+    equipment
+    notes
+    createdBy
+    createdAt
+    updatedAt
   }
 }
 ```
