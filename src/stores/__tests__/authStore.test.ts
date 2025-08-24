@@ -218,7 +218,22 @@ describe("Auth Store", () => {
       return null;
     });
 
+    // Ensure background verification returns a token-invalid response
+    mockGetProfile.mockResolvedValue({
+      success: false,
+      data: {} as User,
+      message: "Invalid token",
+    });
+
     await authStore.loadStoredAuth();
+
+    // Poll for up to 500ms for the background verification to clear auth
+    const start = Date.now();
+    while (Date.now() - start < 500) {
+      if (!authStore.isAuthenticated) break;
+      // yield to event loop
+      await new Promise((r) => setTimeout(r, 20));
+    }
 
     expect(authStore.user).toBeNull();
     expect(authStore.token).toBe("");
