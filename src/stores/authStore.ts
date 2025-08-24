@@ -64,57 +64,65 @@ export const useAuthStore = defineStore("auth", {
           return;
         }
 
+        // Parse stored user and restore optimistically so refresh doesn't immediately log out
+        let parsedUser: User | null = null;
         try {
-          // Basic token format validation for mock tokens
-          if (
-            !token.startsWith("mock_token_") ||
-            token.split("_").length !== 4
-          ) {
-            SecurityUtils.logSecurityEvent("Invalid token format", {
-              tokenPrefix: token.substring(0, 10),
-            });
-            this.clearAuth();
-            return;
-          }
+          parsedUser = JSON.parse(storedUser);
+        } catch (err) {
+          SecurityUtils.logSecurityEvent("Stored user parse failed", {
+            error: String(err),
+          });
+          this.clearAuth();
+          return;
+        }
 
-          // Verify token is still valid
-          const authService = AuthServiceFactory.getInstance();
-          const response = await authService.getProfile(token);
+        // Optimistically restore auth from storage (helps when network/API is temporarily unavailable)
+        this.user = parsedUser;
+        this.token = token;
+        this.isAuthenticated = true;
 
-          if (response.success) {
-            // Verify the stored user data matches the API response
-            const parsedUser = JSON.parse(storedUser);
-            if (
-              parsedUser.id === response.data.id &&
-              parsedUser.email === response.data.email
-            ) {
-              this.user = response.data;
-              this.token = token;
-              this.isAuthenticated = true;
-              SecurityUtils.logSecurityEvent("Auth restored successfully", {
-                userId: response.data.id,
-              });
+        (async () => {
+          try {
+            const authService = AuthServiceFactory.getInstance();
+            const response = await authService.getProfile(token);
+
+            if (response.success) {
+              // Verify stored user matches API response
+              if (
+                parsedUser &&
+                parsedUser.id === response.data.id &&
+                parsedUser.email === response.data.email
+              ) {
+                // Update with canonical server data
+                this.user = response.data;
+                SecurityUtils.logSecurityEvent("Auth restored and verified", {
+                  userId: response.data.id,
+                });
+              } else {
+                SecurityUtils.logSecurityEvent("User data mismatch detected", {
+                  storedId: parsedUser ? parsedUser.id : null,
+                  apiId: response.data.id,
+                });
+                this.clearAuth();
+              }
             } else {
-              // Stored user doesn't match API response, clear auth
-              SecurityUtils.logSecurityEvent("User data mismatch detected", {
-                storedId: parsedUser.id,
-                apiId: response.data.id,
+              // Token explicitly invalid according to API -> clear auth
+              SecurityUtils.logSecurityEvent("Token validation failed", {
+                message: response.message,
               });
               this.clearAuth();
             }
-          } else {
-            // Token invalid, clear storage
-            SecurityUtils.logSecurityEvent("Token validation failed", {
-              message: response.message,
-            });
-            this.clearAuth();
+          } catch (error) {
+            // Network or other transient error: keep optimistic auth instead of logging user out immediately
+            SecurityUtils.logSecurityEvent(
+              "Auth verification network error (keeping optimistic auth)",
+              {
+                error: String(error),
+              }
+            );
+            // Do not clear auth here; a subsequent API call or user action can trigger a re-validation.
           }
-        } catch (error) {
-          SecurityUtils.logSecurityEvent("Auth restoration error", {
-            error: String(error),
-          });
-          this.clearAuth();
-        }
+        })();
       }
     },
 

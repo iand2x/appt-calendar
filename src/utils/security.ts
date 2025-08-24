@@ -10,11 +10,11 @@ export class SecurityUtils {
     if (!token || !user) return false;
 
     try {
-      // Basic token format validation
-      if (!token.startsWith("mock_token_") || token.split("_").length !== 4) {
-        console.warn(
-          "🚨 Potential security threat: Invalid token format detected"
-        );
+      // Minimal token presence check only. Relying on client-side token format
+      // validation is not a security control (tokens can be forged locally).
+      // Real validation must happen on the server (verify signature/expiry).
+      if (typeof token !== "string" || token.trim() === "") {
+        console.warn("🚨 Potential security threat: Empty or missing token");
         return false;
       }
 
@@ -29,17 +29,6 @@ export class SecurityUtils {
           );
           return false;
         }
-      }
-
-      // Check for suspicious values
-      if (
-        userData.role === "admin" &&
-        !userData.email.includes("@clinic.com")
-      ) {
-        console.warn(
-          "🚨 Potential security threat: Suspicious admin account detected"
-        );
-        return false;
       }
 
       return true;
