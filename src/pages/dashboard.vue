@@ -12,8 +12,11 @@
           👑 Administrator View - Viewing all appointments
         </p>
       </div>
-      <button @click="logout" class="text-sm text-red-600 underline">
-        Logout
+      <button
+        @click="logout"
+        class="text-sm text-red-600 underline hover:cursor-pointer"
+      >
+        <PowerIcon class="h-5 w-5 inline-block mr-1" /> Logout
       </button>
     </header>
 
@@ -106,6 +109,7 @@ import type {
   AppointmentUpdateData,
   Appointment,
 } from "@/features/appointments/appointmentTypes";
+import { PowerIcon } from "@heroicons/vue/24/outline";
 
 definePage({
   meta: {

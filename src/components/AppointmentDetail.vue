@@ -9,7 +9,7 @@
         <h3 class="text-lg font-semibold">Appointment Details</h3>
         <button
           @click="$emit('close')"
-          class="text-gray-400 hover:text-gray-600"
+          class="text-gray-400 hover:text-gray-600 hover:cursor-pointer"
         >
           ✕
         </button>
@@ -56,13 +56,13 @@
         <div class="flex space-x-2 pt-4">
           <button
             @click="$emit('edit', appointment)"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors hover:cursor-pointer"
           >
             Edit Appointment
           </button>
           <button
             @click="$emit('delete', appointment.id)"
-            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors hover:cursor-pointer"
           >
             Delete Appointment
           </button>

@@ -19,7 +19,7 @@
       <div
         v-for="appt in appointments"
         :key="appt.id"
-        class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500 hover:shadow-md transition-shadow cursor-pointer"
+        class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500 hover:shadow-md hover:bg-gray-50 transition-shadow transition-colors hover:cursor-pointer group"
         @click="$emit('view', appt)"
       >
         <!-- Header with date and dentist -->
@@ -49,15 +49,17 @@
           <div class="flex space-x-2">
             <button
               @click.stop="$emit('edit', appt)"
-              class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              aria-label="Edit appointment"
+              class="text-blue-600 hover:text-blue-800 text-sm font-medium hover:cursor-pointer"
             >
-              Edit
+              <PencilIcon class="h-4 w-4 inline-block" />
             </button>
             <button
               @click.stop="$emit('delete', appt.id)"
-              class="text-red-600 hover:text-red-800 text-sm font-medium"
+              aria-label="Delete appointment"
+              class="text-red-600 hover:text-red-800 text-sm font-medium hover:cursor-pointer"
             >
-              Delete
+              <TrashIcon class="h-4 w-4 inline-block" />
             </button>
           </div>
         </div>
@@ -68,6 +70,7 @@
 
 <script setup lang="ts">
 import type { Appointment } from "@/features/appointments/appointmentTypes";
+import { PencilIcon, TrashIcon } from "@heroicons/vue/24/outline";
 
 defineProps<{
   appointments: Appointment[];

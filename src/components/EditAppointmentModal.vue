@@ -9,7 +9,7 @@
         <h3 class="text-lg font-semibold">Edit Appointment</h3>
         <button
           @click="$emit('close')"
-          class="text-gray-400 hover:text-gray-600"
+          class="text-gray-400 hover:text-gray-600 hover:cursor-pointer"
         >
           ✕
         </button>
